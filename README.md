@@ -10,6 +10,10 @@ Upload Markdown → scan → find every diagram → diagram library → open one
 Built with **Next.js, React, JavaScript, Tailwind CSS** and **React Flow**. Everything runs in the browser:
 no server-side storage, nothing is uploaded, and your Markdown files are never modified.
 
+## About this project
+
+This is my personal project. I have many Markdown documentation files full of architecture diagrams (Mermaid and ASCII), and I wanted to open each diagram in a draw.io-style editor, move things around and edit them. So I built this app: it pulls every diagram out of the Markdown files and turns each one into a real, editable diagram. The original documentation files I used for testing are kept in [`source-documents/`](source-documents/).
+
 ---
 
 ## Features
@@ -48,7 +52,7 @@ Then click **Load bundled sample docs** to import the five included documents (2
 
 Production build: `npm run build && npm start`.
 
-> Full walkthrough of every feature: **[USER_GUIDE.md](USER_GUIDE.md)**
+> Full walkthrough of every feature: **[docs/USER_GUIDE.md](docs/USER_GUIDE.md)**
 
 ---
 
@@ -128,5 +132,5 @@ components/           diagram-editor, diagram-library, markdown-import, shape-pa
 lib/                  markdown, mermaid, ascii, diagrams, render, export, storage
 public/samples/       the five sample documents used for the demo import
 tests/                node:test suite + tests/e2e browser tests
-*.md (root)           the original sample documentation used as real test data
+source-documents/    the original documentation files (real test data for the extractor)
 ```

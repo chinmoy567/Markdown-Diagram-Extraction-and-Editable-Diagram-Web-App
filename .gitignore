@@ -4,3 +4,5 @@ out/
 *.tsbuildinfo
 .env*
 next-env.d.ts
+diagrams.zip
+*.pdf

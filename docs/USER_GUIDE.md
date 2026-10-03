@@ -255,4 +255,4 @@ All toolbar buttons have tooltips, are keyboard-focusable, and show a visible fo
 | Moved to a new machine | Export **JSON** or **Export all**; the original `.md` files can simply be re-imported |
 | Page didn’t update after code changes | Stop the server and run `npm run dev` again |
 
-For architecture, supported syntax and known limitations see `README.md`.
+For architecture, supported syntax and known limitations see `README.md` (project root).
