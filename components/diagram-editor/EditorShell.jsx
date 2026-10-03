@@ -10,7 +10,7 @@ import { storage } from '@/lib/storage/db';
 import { layoutDiagram } from '@/lib/diagrams/layout';
 import { convertSource } from '@/lib/diagrams/converter';
 import { createDiagram, typeLabel } from '@/lib/diagrams/model';
-import { exportDiagram } from '@/lib/export';
+import { exportDiagram, copyForDrawio } from '@/lib/export';
 import { generateMermaid } from '@/lib/mermaid/generator';
 
 const STATUS_TEXT = { converted: 'Converted', partial: 'Partly converted', reference: 'Reference only', failed: 'Conversion failed' };
@@ -124,6 +124,15 @@ export default function EditorShell({ id }) {
     } catch (e) { say(`Export failed: ${e.message}`); } finally { setBusy(''); }
   };
 
+  const doCopyDrawio = async () => {
+    setMenu(null);
+    try {
+      const model = editor.current ? editor.current.getDiagram() : record;
+      await copyForDrawio({ ...model, name: name || model.name });
+      say('Copied — open draw.io and press Ctrl+V on the canvas');
+    } catch (e) { say(`Copy failed: ${e.message}`); }
+  };
+
   const toggleFullscreen = async () => {
     try { if (document.fullscreenElement) await document.exitFullscreen(); else await root.current?.requestFullscreen(); } catch { say('Full screen is not available here'); }
   };
@@ -217,7 +226,7 @@ export default function EditorShell({ id }) {
             <Btn onClick={() => setMenu(menu === 'export' ? null : 'export')} title="Export">⭳ Export ▾</Btn>
             {menu === 'export' && (
               <div className="dw-menu dw-menu-right" role="menu">
-                {[['svg', 'SVG image'], ['png', 'PNG image'], ['pdf', 'PDF'], ['json', 'JSON (editable model)'], ['mermaid', 'Mermaid source']].map(([k, l]) => <button key={k} role="menuitem" type="button" onClick={() => doExport(k)}>{l}</button>)}
+                {[['svg', 'SVG image'], ['png', 'PNG image'], ['pdf', 'PDF'], ['json', 'JSON (editable model)'], ['mermaid', 'Mermaid source'], ['drawio', 'draw.io file (.drawio)']].map(([k, l]) => <button key={k} role="menuitem" type="button" onClick={() => doExport(k)}>{l}</button>)}<button role="menuitem" type="button" onClick={doCopyDrawio}>Copy for draw.io (paste)</button>
               </div>
             )}
           </div>
