@@ -1,0 +1,25 @@
+import puppeteer from 'puppeteer-core';
+import fs from 'node:fs';
+const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
+const b = await puppeteer.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe', headless: 'new', userDataDir: 'out/profile', defaultViewport: { width: 1500, height: 900 } });
+const p = await b.newPage();
+const errs=[]; p.on('pageerror', e=>errs.push('PAGEERR '+e.message.slice(0,300)));
+await p.goto('http://localhost:3100/', { waitUntil: 'networkidle2' });
+await p.waitForSelector('.dw-card');
+const cards = await p.$$eval('.dw-card-title', e=>e.map(a=>[a.textContent,a.getAttribute('href')]));
+const open = async (name) => { await p.goto('http://localhost:3100'+cards.find(c=>c[0]===name)[1], { waitUntil: 'networkidle2' }); await p.waitForSelector('.dw-toolbar, .dw-convwarn'); await sleep(1800); };
+await p.evaluateOnNewDocument(()=>{ window.__blobs=[]; const o=URL.createObjectURL; URL.createObjectURL=(b)=>{ if(b instanceof Blob && b.type!=='image/svg+xml;charset=utf-8') window.__blobs.push(b); return o.call(URL,b); }; });
+await open('Data Model — Protocol Contract');
+await p.screenshot({path:'out/class.png'});
+const exp = async (label) => { await p.evaluate(()=>[...document.querySelectorAll('.dw-tb')].find(b=>/Export/.test(b.textContent)).click()); await sleep(150); await p.evaluate((l)=>[...document.querySelectorAll('.dw-menu button')].find(b=>b.textContent.startsWith(l)).click(), label); await sleep(2500); };
+for (const f of ['SVG','PNG','PDF','JSON']) await exp(f);
+const info = await p.evaluate(async ()=>{ const out=[]; for (const bl of window.__blobs) { const head = new Uint8Array(await bl.slice(0,8).arrayBuffer()); out.push({type:bl.type,size:bl.size,head:[...head].map(x=>x.toString(16)).join(' '), text: bl.type.includes('svg')||bl.type.includes('json') ? (await bl.text()).slice(0,120) : ''}); } return out; });
+console.log(JSON.stringify(info,null,1));
+// save svg blob from page for visual check
+const svgText = await p.evaluate(async ()=>{ const bl=window.__blobs.find(b=>b.type.includes('svg')); return bl? await bl.text():''; });
+fs.writeFileSync('out/class-export.svg', svgText);
+await open('Sequence — Startup Handshake'); await p.screenshot({path:'out/seq.png'});
+await open('Startup Handshake'); await p.screenshot({path:'out/ascii-seq.png'});
+await open('High-Level Communication Architecture'); await p.screenshot({path:'out/ascii-box.png'});
+console.log('ERRORS',errs);
+await b.close();
