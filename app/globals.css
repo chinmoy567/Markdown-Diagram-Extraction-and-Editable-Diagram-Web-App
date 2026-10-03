@@ -250,3 +250,6 @@ textarea.dw-input { resize: vertical; }
 .dw-ref-dock { flex: none; height: 32%; min-height: 120px; display: flex; flex-direction: column; background: #fffef7; border-top: 1px solid #d9cf9a; }
 .dw-ref-dock .dw-ref-head { display: flex; justify-content: space-between; align-items: center; padding: 3px 10px; border-bottom: 1px solid #e6dfb4; }
 .dw-ref-dock pre { margin: 0; padding: 6px 10px; overflow: auto; flex: 1; font: 11.5px/1.35 var(--mono); }
+
+.dw-table-preview { margin-top: 6px; max-height: 260px; overflow: auto; font-size: 12px; }
+.dw-table-preview table { background: #fff; }

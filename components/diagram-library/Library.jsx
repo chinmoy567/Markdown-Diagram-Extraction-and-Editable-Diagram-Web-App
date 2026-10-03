@@ -5,6 +5,8 @@ import { storage } from '@/lib/storage/db';
 import { analyseFiles, commitImports, promoteSkipped } from '@/lib/storage/library';
 import { exportDiagram, exportAllZip, download } from '@/lib/export';
 import { typeLabel } from '@/lib/diagrams/model';
+import { extractTables, tableToHtml } from '@/lib/markdown/tables';
+import { copyTable } from '@/lib/export/tableClipboard';
 import ImportDialog from '../markdown-import/ImportDialog';
 import Modal from './Modal';
 
@@ -27,6 +29,7 @@ export default function Library() {
   const [busy, setBusy] = useState('');
   const [sourceOf, setSourceOf] = useState(null);
   const [reportFor, setReportFor] = useState(null);
+  const [tablesFor, setTablesFor] = useState(null);
   const [exportMenu, setExportMenu] = useState(null);
   const [drag, setDrag] = useState(false);
   const [toast, setToast] = useState('');
@@ -260,6 +263,7 @@ export default function Library() {
                     <span className="dw-muted">{stats.byFile[g.file.id] ?? 0} diagrams</span>
                     <span className="dw-grow" />
                     {(g.file.skipped?.length ?? 0) > 0 && <button type="button" className="dw-link" onClick={() => setReportFor(g.file)}>{g.file.skipped.length} other block{g.file.skipped.length === 1 ? '' : 's'} (code / text) — review</button>}
+                    {g.file.text && /|s*:?-+/.test(g.file.text) && <button type="button" className="dw-link" onClick={() => setTablesFor(g.file)}>Tables — view &amp; copy</button>}
                     <button type="button" className="dw-link dw-danger-link" onClick={() => delFile(g.file)}>Remove file</button>
                   </header>
                 )}
@@ -314,6 +318,7 @@ export default function Library() {
           <pre className="dw-code dw-code-plain" tabIndex={0}>{sourceOf.source.content}</pre>
         </Modal>
       )}
+      {tablesFor && <TablesModal file={tablesFor} onClose={() => setTablesFor(null)} say={say} />}
       {reportFor && <SkippedReport file={reportFor} onClose={() => setReportFor(null)} onPromote={promote} />}
       {(busy || toast) && <div className="dw-toast" role="status">{busy || toast}</div>}
     </div>
@@ -321,6 +326,34 @@ export default function Library() {
 }
 
 function countItems(items) { return items.reduce((n, it) => n + 1 + (it.type === 'block' ? it.branches.reduce((m, b) => m + countItems(b.items), 0) : 0), 0); }
+
+function TablesModal({ file, onClose, say }) {
+  const tables = useMemo(() => extractTables(file.text ?? ''), [file]);
+  const copy = async (t, mode) => {
+    try { await copyTable(t, mode); say(mode === 'markdown' ? 'Markdown copied' : 'Table copied — paste it into Word, Google Docs or Excel'); }
+    catch (e) { say(`Copy failed: ${e.message}`); }
+  };
+  return (
+    <Modal title={`Tables in ${file.name}`} onClose={onClose} wide>
+      <p className="dw-hint">Copy a table and paste it straight into Word, Google Docs or Excel (Ctrl+V): it arrives as a real table. “Copy as Markdown” copies the raw pipe-table text instead.</p>
+      {!tables.length && <p className="dw-muted">No tables found in this file.</p>}
+      <ul className="dw-skip-list">
+        {tables.map((t) => (
+          <li key={t.index}>
+            <div className="dw-skip-head">
+              <span><b>{t.heading || '(no heading)'}</b> <span className="dw-muted">· lines {t.startLine}–{t.endLine} · {t.rows.length} row{t.rows.length === 1 ? '' : 's'} × {t.header.length} col{t.header.length === 1 ? '' : 's'}</span></span>
+              <span className="dw-inline-actions">
+                <button type="button" className="dw-btn dw-primary" onClick={() => copy(t, 'rich')}>Copy table</button>
+                <button type="button" className="dw-btn" onClick={() => copy(t, 'markdown')}>Copy as Markdown</button>
+              </span>
+            </div>
+            <div className="dw-table-preview" dangerouslySetInnerHTML={{ __html: tableToHtml(t) }} />
+          </li>
+        ))}
+      </ul>
+    </Modal>
+  );
+}
 
 function SkippedReport({ file, onClose, onPromote }) {
   const groups = [['candidate', 'Possible diagrams — outlines and loose arrow text', 'These were not auto-extracted because they look like outlines or prose. Convert any you want as a diagram.'], ['text', 'Other text blocks', 'Checklists, logs, formats and listings. Not diagrams; convert only if one is.'], ['code', 'Code blocks', 'Source code and configuration (C/C++, Python, JSON, shell…). Never treated as diagrams.']];
