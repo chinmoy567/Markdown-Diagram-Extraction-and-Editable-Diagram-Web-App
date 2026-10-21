@@ -15,5 +15,7 @@ test('draw.io export produces mxGraph XML with vertices and edges', async () => 
   assert.equal((xml.match(/edge="1"/g) || []).length, 2);
   assert.match(xml, /rhombus/);
   assert.match(xml, /Start &amp;amp; &quot;go&quot;/);
+  assert.match(xml, /labelBackgroundColor=#ffffff/);
+  assert.match(xml, /fontStyle=0/);
   assert.match(diagramToDrawioFile(laid), /<mxfile/);
 });
