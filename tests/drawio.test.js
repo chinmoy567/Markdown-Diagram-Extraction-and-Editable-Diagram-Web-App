@@ -124,6 +124,15 @@ test('exported edge label background is opaque so connector lines do not show th
   assert.equal(style.labelBackgroundColor, '#ffffff');
 });
 
+test('edge labels carry no border box and an explicit dark font colour', async () => {
+  const d = await diagramFor('flowchart LR\n  A[A] -.->|UART 9600 baud| B[B]');
+  const xml = diagramToDrawioXml(d);
+  const [edge] = edgeCells(xml);
+  const style = parseStyle(cellAttr(edge, 'style'));
+  assert.equal(style.labelBorderColor, 'none', 'draw.io otherwise draws a box around the pasted edge label');
+  assert.equal(style.fontColor, '#0f172a', 'without an explicit fontColor the label inherits the canvas theme colour');
+});
+
 test('node and group labels are unaffected by the edge-label fix', async () => {
   const d = await diagramFor('flowchart LR\n  subgraph G[Group One]\n    A[Node A]\n  end\n  A -->|edge label| B[Node B]');
   const xml = diagramToDrawioXml(d);
