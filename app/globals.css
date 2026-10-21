@@ -196,7 +196,8 @@ textarea.dw-input { resize: vertical; }
 .dw-resize-handle { width: 9px !important; height: 9px !important; border-radius: 1px !important; background: #fff !important; border: 1.5px solid var(--accent) !important; }
 .dw-resize-line { border-color: var(--accent) !important; }
 .react-flow__edge.selected .react-flow__edge-path { stroke: var(--accent); }
-.dw-edge-label { position: absolute; pointer-events: all; background: rgba(255, 255, 255, .92); padding: 1px 5px; border-radius: 3px; font-size: 11px; color: #1e293b; text-align: center; white-space: nowrap; cursor: text; line-height: 1.35; }
+.dw-edge-label { position: absolute; pointer-events: all; background: #ffffff; padding: 1px 5px; border-radius: 3px; font-size: 11px; color: #1e293b; text-align: center; white-space: nowrap; cursor: text; line-height: 1.35; text-decoration: none !important; }
+.dw-edge-label, .dw-edge-label * { text-decoration: none !important; }
 .dw-edge-end-label { position: absolute; pointer-events: none; background: rgba(255, 255, 255, .85); padding: 0 3px; border-radius: 2px; font-size: 10px; color: #334155; }
 .dw-edge-add-label { position: absolute; pointer-events: all; font: inherit; font-size: 11px; padding: 0 6px; border: 1px dashed var(--accent); background: #fff; color: var(--accent); border-radius: 3px; cursor: pointer; }
 .dw-edge-input { font: inherit; font-size: 11px; border: 1.5px solid var(--accent); border-radius: 3px; padding: 2px 4px; resize: none; min-width: 90px; outline: none; }
