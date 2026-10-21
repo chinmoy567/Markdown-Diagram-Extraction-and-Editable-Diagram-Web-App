@@ -133,6 +133,16 @@ test('edge labels carry no border box and an explicit dark font colour', async (
   assert.equal(style.fontColor, '#0f172a', 'without an explicit fontColor the label inherits the canvas theme colour');
 });
 
+test('edge labels are centred on the connector, not dropped below it', async () => {
+  const d = await diagramFor('flowchart LR\n  A[A] -.->|WebRTC: video, audio, talk| B[B]');
+  const xml = diagramToDrawioXml(d);
+  const [edge] = edgeCells(xml);
+  const style = parseStyle(cellAttr(edge, 'style'));
+  assert.equal(style.verticalAlign, 'middle', 'without this draw.io hangs the label below the line');
+  assert.equal(style.align, 'center');
+  assert.match(xml, /<mxPoint as="offset"\/>/, 'a zero offset point stops draw.io applying its default label offset');
+});
+
 test('node and group labels are unaffected by the edge-label fix', async () => {
   const d = await diagramFor('flowchart LR\n  subgraph G[Group One]\n    A[Node A]\n  end\n  A -->|edge label| B[Node B]');
   const xml = diagramToDrawioXml(d);
