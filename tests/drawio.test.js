@@ -116,12 +116,12 @@ test('dashed and dotted connector styles are preserved alongside the label fix',
   assert.doesNotMatch(cellAttr(solid, 'style'), /dashed=1/);
 });
 
-test('exported edge label has no background chip behind the text', async () => {
+test('exported edge label breaks the connector line instead of being struck through', async () => {
   const d = await diagramFor('flowchart LR\n  A[A] -.->|supervises| B[B]');
   const xml = diagramToDrawioXml(d);
   const [edge] = edgeCells(xml);
   const style = parseStyle(cellAttr(edge, 'style'));
-  assert.equal(style.labelBackgroundColor, 'none');
+  assert.equal(style.labelBackgroundColor, 'default');
 });
 
 test('edge labels carry no border box and an explicit dark font colour', async () => {
@@ -190,7 +190,7 @@ test('the full representative architecture diagram exports valid XML with every 
   for (const e of edges) {
     const style = parseStyle(cellAttr(e, 'style'));
     assert.equal(style.fontStyle, '0');
-    assert.equal(style.labelBackgroundColor, 'none');
+    assert.equal(style.labelBackgroundColor, 'default');
   }
   const file = diagramToDrawioFile(d);
   assertWellFormedXml(file);
