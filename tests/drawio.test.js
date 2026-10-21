@@ -130,7 +130,7 @@ test('edge labels carry no border box and an explicit dark font colour', async (
   const [edge] = edgeCells(xml);
   const style = parseStyle(cellAttr(edge, 'style'));
   assert.equal(style.labelBorderColor, 'none', 'draw.io otherwise draws a box around the pasted edge label');
-  assert.equal(style.fontColor, '#0f172a', 'without an explicit fontColor the label inherits the canvas theme colour');
+  assert.equal(style.fontColor, '#000000', 'draw.io copies always use black label text, regardless of the in-app theme');
 });
 
 test('edge labels are centred on the connector, not dropped below it', async () => {
@@ -171,6 +171,35 @@ test('a single edge in the source produces exactly one edge cell (no duplication
   const xml = diagramToDrawioXml(d);
   assert.equal(edgeCells(xml).length, 1);
   assert.equal(d.edges.length, 1);
+});
+
+test('draw.io copies never carry a dark/black fill: nodes and groups are always forced to white fill with black text, even with a dark classDef', async () => {
+  const d = await diagramFor([
+    'flowchart LR',
+    '  subgraph G[Dark Group]',
+    '    A[Dark Node]:::dark',
+    '    B[Plain Node]',
+    '  end',
+    '  A --> B',
+    '  classDef dark fill:#1e293b,color:#ffffff',
+  ].join('\n'));
+  const xml = diagramToDrawioXml(d);
+  for (const v of vertexCells(xml)) {
+    const style = parseStyle(cellAttr(v, 'style'));
+    assert.equal(style.fillColor, '#FFFFFF', 'every copied node/group must have a white fill, never the dark in-app colour');
+    assert.equal(style.fontColor, '#000000', 'every copied node/group must have black text, never the in-app light/dark text colour');
+  }
+});
+
+test('start/end marker nodes (normally dark-filled in-app) export with white fill, not black', async () => {
+  const d = await diagramFor('flowchart LR\n  S((start)) --> A[Step] --> E((end))');
+  const xml = diagramToDrawioXml(d);
+  for (const v of vertexCells(xml)) {
+    const style = parseStyle(cellAttr(v, 'style'));
+    assert.notEqual(style.fillColor, '#0f172a', 'start/end nodes must not keep their dark in-app fill when copied');
+    assert.equal(style.fillColor, '#FFFFFF');
+    assert.equal(style.fontColor, '#000000');
+  }
 });
 
 test('the full representative architecture diagram exports valid XML with every feature intact', async () => {
